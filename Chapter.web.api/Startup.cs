@@ -1,9 +1,13 @@
+using Chapter.web.api.Repository;
+using charpter.Contexts;
+using charpter.Repositors;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +27,47 @@ namespace Chapter.web.api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages();
+            services.AddControllers();
+
+            services.AddCors(option =>
+             {
+                 option.AddPolicy("CorsPolicy",
+                 builder =>
+                 {
+                     builder.WithOrigins("http://localhost:1000")
+                     .AllowAnyHeader()
+                     .AllowAnyMethod();
+                 });
+             }); 
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Version = "v1", Title = "Charpter.Web.api" });
+            });
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = "JwtBearer";
+                options.DefaultChallengeScheme = "JwtBearer";
+            }).AddJwtBearer("JwtBearer", options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("Charpter-chave-autentication")),
+                    ClockSkew = TimeSpan.FromMinutes(60),
+                    ValidIssuer = "Chapter.web.api",
+                    ValidAudience = "Chapter.web.api"
+
+                };
+            });
+
+            services.AddScoped<ChapterContext, ChapterContext>();
+            services.AddTransient<LivroRepository, LivroRepository>();
+            services.AddTransient<UsuarioRepository, UsuarioRepository>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,15 +85,20 @@ namespace Chapter.web.api
             }
 
             app.UseHttpsRedirection();
+            
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseCors("CorsPolicy");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
         }
     }
