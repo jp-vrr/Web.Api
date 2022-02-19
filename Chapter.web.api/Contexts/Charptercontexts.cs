@@ -1,4 +1,5 @@
-﻿using charpter.models;
+﻿using Chapter.web.api.models;
+using charpter.models;
 using Microsoft.EntityFrameworkCore;
 
 namespace charpter.Contexts
@@ -23,5 +24,6 @@ namespace charpter.Contexts
         }// dbsetrepresenta as entidades que serão utilizadas nas operações de leitura, criação, atualização e deleção
         public DbSet<Livro> Livros { get; set; }
 
+        public DbSet<Usuario> Usuarios { get; set; }
     }
 }
