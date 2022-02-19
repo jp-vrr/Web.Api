@@ -34,7 +34,7 @@ namespace Chapter.web.api
                  option.AddPolicy("CorsPolicy",
                  builder =>
                  {
-                     builder.WithOrigins("http://localhost:1000")
+                     builder.WithOrigins("http://localhost:5001")
                      .AllowAnyHeader()
                      .AllowAnyMethod();
                  });
@@ -83,6 +83,14 @@ namespace Chapter.web.api
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Chapter.ApiWeb");
+                c.RoutePrefix = String.Empty;
+            });
 
             app.UseHttpsRedirection();
             
